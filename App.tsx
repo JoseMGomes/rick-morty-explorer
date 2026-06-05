@@ -1,13 +1,14 @@
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
 import { Routes } from './src/routes';
+import { FavoritesProvider } from './src/contexts/FavoritesContext';
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Routes />
-    </NavigationContainer>
+    <FavoritesProvider>
+      <NavigationContainer>
+        <Routes />
+      </NavigationContainer>
+    </FavoritesProvider>
   );
 }
-
