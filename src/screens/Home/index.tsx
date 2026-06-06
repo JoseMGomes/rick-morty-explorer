@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  TextInput,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { fetchCharacters } from "../../services/api";
@@ -19,14 +20,20 @@ export function Home() {
 
   const [characters, setCharacters] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
-    loadCharacters();
-  }, []);
+    const delayDebounceFn = setTimeout(() => {
+      loadCharacters(search);
+    }, 500);
 
-  const loadCharacters = async () => {
+    return () => clearTimeout(delayDebounceFn);
+  }, [search]);
+
+  const loadCharacters = async (query: string) => {
+    setLoading(true);
     try {
-      const data = await fetchCharacters();
+      const data = await fetchCharacters(query);
       setCharacters(data);
     } catch (error) {
       Alert.alert("Erro", "Não foi possível carregar os dados da API.");
@@ -45,28 +52,36 @@ export function Home() {
     </TouchableOpacity>
   );
 
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#4939BA" />
-        <Text style={{ marginTop: 10 }}>Buscando no multiverso...</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
         Personagens (Favoritos: {favorites.length})
       </Text>
-      <Text style={styles.title}>Personagens</Text>
 
-      <FlatList
-        data={characters}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={renderItem}
-        showsVerticalScrollIndicator={false}
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Pesquisar personagem (ex: Rick, Morty, Summer)..."
+        placeholderTextColor="#999"
+        value={search}
+        onChangeText={setSearch}
       />
+
+      {loading ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color="#4939BA" />
+        </View>
+      ) : characters.length === 0 ? (
+        <View style={styles.center}>
+          <Text>Nenhum personagem encontrado com esse nome.</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={characters}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </View>
   );
 }
